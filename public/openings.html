@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheckMateX - Chess Openings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        header, footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .highlight {
+            color: #e67e22;
+        }
+        
+        .content h2 {
+            margin: 2rem 0 1rem;
+            border-bottom: 2px solid #e67e22;
+            padding-bottom: 0.5rem;
+        }
+        
+        /* Card Layout */
+        .opening-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .card-img {
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .ruy-lopez {
+            background-image: url("/api/placeholder/400/320");
+        }
+        
+        .sicilian {
+            background-image: url("/api/placeholder/400/320");
+        }
+        
+        .queens-gambit {
+            background-image: url("/api/placeholder/400/320");
+        }
+        
+        .kings-indian {
+            background-image: url("/api/placeholder/400/320");
+        }
+        
+        .card-content {
+            padding: 1.5rem;
+        }
+        
+        .card h3 {
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        /* Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .popup {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            border-radius: 12px;
+            overflow-y: auto;
+            position: relative;
+            animation: popIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .popup-content {
+            padding: 2rem;
+        }
+        
+        .popup h2 {
+            color: #e67e22;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .popup-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid #e67e22;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .moves {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .move {
+            display: flex;
+            align-items: center;
+            background: #f5f7fa;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .move-number {
+            font-weight: bold;
+            margin-right: 0.5rem;
+            color: #e67e22;
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            margin: 1.5rem 0;
+        }
+        
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .principles {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+        
+        .principles h2 {
+            margin-top: 0;
+        }
+        
+        .principles ol {
+            padding-left: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .principles li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CheckMateX</h1>
+        <nav>
+            <style>
+                /* ✅ This is the correct place for CSS */
+                nav a {
+                    color: white;
+                    font-size: 18px;
+                    margin-right: 20px;
+                    text-decoration: none;
+                    font-weight: 500;
+                    transition: color 0.3s;
+                }
+        
+                nav a:hover {
+                    color: orange;
+                }
+            </style>
+          
+              
+            <a href="mainindex.html">Home</a>
+            <a href="learning-options.html">Openings</a>
+            <a href="#">Tactics</a>
+            <a href="#features">About</a>
+        </nav>
+    </header>
+    
+    <main>
+        <section class="hero">
+            <h1>Master Chess <span class="highlight">Openings</span></h1>
+            <p>Learn powerful opening strategies to start your games with confidence</p>
+        </section>
+        
+        <section class="content">
+            <h2>Popular Chess Openings</h2>
+            <div class="opening-cards">
+                <div class="card" data-opening="ruy-lopez">
+                    <div class="card-img ruy-lopez"></div>
+                    <div class="card-content">
+                        <h3>The Ruy Lopez</h3>
+                        <p>A classic opening that develops pieces quickly and fights for control of the center.</p>
+                    </div>
+                </div>
+                
+                <div class="card" data-opening="sicilian">
+                    <div class="card-img sicilian"></div>
+                    <div class="card-content">
+                        <h3>Sicilian Defense</h3>
+                        <p>An aggressive defense against 1.e4, creating imbalanced positions with many tactical opportunities.</p>
+                    </div>
+                </div>
+                
+                <div class="card" data-opening="queens-gambit">
+                    <div class="card-img queens-gambit"></div>
+                    <div class="card-content">
+                        <h3>Queen's Gambit</h3>
+                        <p>A solid opening for White that offers a pawn sacrifice to gain central control and development.</p>
+                    </div>
+                </div>
+                
+                <div class="card" data-opening="kings-indian">
+                    <div class="card-img kings-indian"></div>
+                    <div class="card-content">
+                        <h3>King's Indian Defense</h3>
+                        <p>A hypermodern opening where Black allows White to build a center, then counterattacks it.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <section class="principles">
+                <h2>Opening Principles</h2>
+                <ol>
+                    <li>Control the center</li>
+                    <li>Develop your pieces</li>
+                    <li>Castle early for king safety</li>
+                    <li>Connect your rooks</li>
+                    <li>Don't move the same piece twice in the opening</li>
+                </ol>
+            </section>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 CheckMateX - All Rights Reserved</p>
+    </footer>
+    
+    <!-- Popup Overlays -->
+    <div class="popup-overlay" id="ruy-lopez-popup">
+        <div class="popup">
+            <button class="close-btn">&times;</button>
+            <div class="popup-content">
+                <h2>The Ruy Lopez</h2>
+                
+                <div class="popup-tabs">
+                    <div class="tab active" data-tab="moves-ruy">How to Play</div>
+                    <div class="tab" data-tab="history-ruy">History</div>
+                    <div class="tab" data-tab="video-ruy">Video</div>
+                </div>
+                
+                <div class="tab-content active" id="moves-ruy">
+                    <h3>Key Moves</h3>
+                    <p>The Ruy Lopez is characterized by the moves:</p>
+                    <div class="moves">
+                        <div class="move"><span class="move-number">1.</span> e4 e5</div>
+                        <div class="move"><span class="move-number">2.</span> Nf3 Nc6</div>
+                        <div class="move"><span class="move-number">3.</span> Bb5</div>
+                    </div>
+                    
+                    <h3>Main Ideas</h3>
+                    <p>White aims to pressure the knight on c6 which defends the e5 pawn. The bishop also prepares castling. After 3...a6, White has several options:</p>
+                    <ul>
+                        <li><strong>Exchange Variation:</strong> 4. Bxc6, doubling Black's pawns</li>
+                        <li><strong>Closed Variation:</strong> 4. Ba4, retreating but maintaining the pin</li>
+                        <li><strong>Open Variation:</strong> Leads to open positions after d4</li>
+                    </ul>
+                    
+                    <h3>Step-by-Step Development</h3>
+                    <ol>
+                        <li>White establishes presence in the center with 1.e4</li>
+                        <li>Black responds symmetrically with 1...e5</li>
+                        <li>White develops knight to f3, attacking e5</li>
+                        <li>Black defends with knight to c6</li>
+                        <li>White pins the knight with bishop to b5</li>
+                        <li>Common continuation: 3...a6 4.Ba4 Nf6 5.0-0</li>
+                    </ol>
+                </div>
+                
+                <div class="tab-content" id="history-ruy">
+                    <h3>History of the Ruy Lopez</h3>
+                    <p>Named after Spanish priest Ruy López de Segura who analyzed it in his 1561 book on chess. It's one of the oldest documented openings and remains extremely popular at all levels of play.</p>
+                    
+                    <p>The opening gained significant popularity in the late 19th century and was a favorite of the first world champion Wilhelm Steinitz. In the early 20th century, it was further developed by players like Capablanca and Alekhine.</p>
+                    
+                    <p>Today, the Ruy Lopez remains one of the most respected openings at the grandmaster level, with countless variations and subvariations having been analyzed to great depth.</p>
+                    
+                    <h3>Famous Games</h3>
+                    <p>The opening has featured in many famous games, including numerous world championship matches.</p>
+                </div>
+                
+                <div class="tab-content" id="video-ruy">
+                    <h3>Ruy Lopez Opening Tutorial</h3>
+                    <div class="video-container">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/KfwzuZUtYws?si=GARjMK-e-L10X3i5" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    
+                        
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="popup-overlay" id="sicilian-popup">
+        <div class="popup">
+            <button class="close-btn">&times;</button>
+            <div class="popup-content">
+                <h2>Sicilian Defense</h2>
+                
+                <div class="popup-tabs">
+                    <div class="tab active" data-tab="moves-sicilian">How to Play</div>
+                    <div class="tab" data-tab="history-sicilian">History</div>
+                    <div class="tab" data-tab="video-sicilian">Video</div>
+                </div>
+                
+                <div class="tab-content active" id="moves-sicilian">
+                    <h3>Key Moves</h3>
+                    <p>The Sicilian Defense begins with:</p>
+                    <div class="moves">
+                        <div class="move"><span class="move-number">1.</span> e4 c5</div>
+                    </div>
+                    
+                    <h3>Main Ideas</h3>
+                    <p>Black immediately counters White's center control with a flank pawn. This creates asymmetrical positions and fights for the d4 square. The main variations include:</p>
+                    <ul>
+                        <li><strong>Najdorf Variation:</strong> After 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 a6</li>
+                        <li><strong>Dragon Variation:</strong> Features fianchettoing the bishop to g7</li>
+                        <li><strong>Classical Variation:</strong> With ...d6 and ...Nc6 development</li>
+                    </ul>
+                    
+                    <h3>Step-by-Step Development</h3>
+                    <ol>
+                        <li>White plays 1.e4, claiming central space</li>
+                        <li>Black responds asymmetrically with 1...c5</li>
+                        <li>White typically plays 2.Nf3, preparing to open the center</li>
+                        <li>Black has several options including 2...d6, 2...Nc6, or 2...e6</li>
+                        <li>White often continues with 3.d4, challenging the center</li>
+                        <li>After exchanges, complex imbalanced positions arise</li>
+                    </ol>
+                </div>
+                
+                <div class="tab-content" id="history-sicilian">
+                    <h3>History of the Sicilian Defense</h3>
+                    <p>This opening gets its name from an Italian chess manuscript from the late 16th century. However, it didn't gain significant popularity until the mid-20th century.</p>
+                    
+                    <p>The opening saw a surge in popularity in the 1950s and 1960s when players like Bobby Fischer and Mikhail Tal used it with great success. It challenged the notion that 1...e5 was the only strong response to 1.e4.</p>
+                    
+                    <p>Today, the Sicilian is the most common response to 1.e4 at the highest levels, known for creating sharp, unbalanced positions that offer Black good winning chances.</p>
+                    
+                    <h3>Notable Players</h3>
+                    <p>The Sicilian has been employed by numerous world champions and top players including Garry Kasparov, Bobby Fischer, and Viswanathan Anand.</p>
+                </div>
+                
+                <div class="tab-content" id="video-sicilian">
+                    <h3>Sicilian Defense Tutorial</h3>
+                    <div class="video-container">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/qM4e7g2RukI?si=sYjppKSdbLfIKR1v" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="popup-overlay" id="queens-gambit-popup">
+        <div class="popup">
+            <button class="close-btn">&times;</button>
+            <div class="popup-content">
+                <h2>Queen's Gambit</h2>
+                
+                <div class="popup-tabs">
+                    <div class="tab active" data-tab="moves-queens">How to Play</div>
+                    <div class="tab" data-tab="history-queens">History</div>
+                    <div class="tab" data-tab="video-queens">Video</div>
+                </div>
+                
+                <div class="tab-content active" id="moves-queens">
+                    <h3>Key Moves</h3>
+                    <p>The Queen's Gambit starts with:</p>
+                    <div class="moves">
+                        <div class="move"><span class="move-number">1.</span> d4 d5</div>
+                        <div class="move"><span class="move-number">2.</span> c4</div>
+                    </div>
+                    
+                    <h3>Main Ideas</h3>
+                    <p>White offers a pawn sacrifice to gain control of the center. The main variations are:</p>
+                    <ul>
+                        <li><strong>Queen's Gambit Accepted:</strong> 2...dxc4, taking the offered pawn</li>
+                        <li><strong>Queen's Gambit Declined:</strong> 2...e6, reinforcing the d5 pawn</li>
+                        <li><strong>Slav Defense:</strong> 2...c6, supporting d5 with another pawn</li>
+                    </ul>
+                    
+                    <h3>Step-by-Step Development</h3>
+                    <ol>
+                        <li>White starts with 1.d4, controlling the center</li>
+                        <li>Black responds with 1...d5, also claiming central space</li>
+                        <li>White plays 2.c4, attacking Black's d5 pawn</li>
+                        <li>If Black accepts: 2...dxc4, White develops pieces to recapture later</li>
+                        <li>If Black declines: 2...e6, White typically continues with 3.Nc3</li>
+                        <li>White aims for a strong pawn center and piece development</li>
+                    </ol>
+                </div>
+                
+                <div class="tab-content" id="history-queens">
+                    <h3>History of the Queen's Gambit</h3>
+                    <p>One of the oldest recorded chess openings, appearing in the Göttingen manuscript of 1490. It has been a fundamental opening throughout chess history.</p>
+                    
+                    <p>The opening gained significant attention during the 1927 World Championship match between Capablanca and Alekhine. It saw a revival in the 1940s and 1950s, championed by Soviet players like Botvinnik.</p>
+                    
+                    <p>In 2020, the Queen's Gambit saw unprecedented mainstream recognition due to the popular Netflix series of the same name, leading to a surge in its popularity among amateur players.</p>
+                    
+                    <h3>Strategic Themes</h3>
+                    <p>The Queen's Gambit is considered a positional opening, often leading to strategic maneuvering rather than immediate tactical skirmishes.</p>
+                </div>
+                
+                <div class="tab-content" id="video-queens">
+                    <h3>Queen's Gambit Tutorial</h3>
+                    <div class="video-container">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/mtsabsZ4wG4?si=VjczbLrIRbii0gpQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="popup-overlay" id="kings-indian-popup">
+        <div class="popup">
+            <button class="close-btn">&times;</button>
+            <div class="popup-content">
+                <h2>King's Indian Defense</h2>
+                
+                <div class="popup-tabs">
+                    <div class="tab active" data-tab="moves-kings">How to Play</div>
+                    <div class="tab" data-tab="history-kings">History</div>
+                    <div class="tab" data-tab="video-kings">Video</div>
+                </div>
+                
+                <div class="tab-content active" id="moves-kings">
+                    <h3>Key Moves</h3>
+                    <p>The King's Indian Defense begins with:</p>
+                    <div class="moves">
+                        <div class="move"><span class="move-number">1.</span> d4 Nf6</div>
+                        <div class="move"><span class="move-number">2.</span> c4 g6</div>
+                        <div class="move"><span class="move-number">3.</span> Nc3 Bg7</div>
+                        <div class="move"><span class="move-number">4.</span> e4 d6</div>
+                    </div>
+                    
+                    <h3>Main Ideas</h3>
+                    <p>Black allows White to build a strong center with pawns, planning to counterattack it later. Main variations include:</p>
+                    <ul>
+                        <li><strong>Classical Variation:</strong> With 5.Nf3 0-0 6.Be2</li>
+                        <li><strong>Sämisch Variation:</strong> With 5.f3, emphasizing central control</li>
+                        <li><strong>Four Pawns Attack:</strong> With 5.f4, maximizing space advantage</li>
+                    </ul>
+                    
+                    <h3>Step-by-Step Development</h3>
+                    <ol>
+                        <li>White begins with 1.d4, claiming the center</li>
+                        <li>Black plays 1...Nf6, developing a piece rather than a pawn</li>
+                        <li>White expands with 2.c4, and Black begins the fianchetto with 2...g6</li>
+                        <li>After 3.Nc3 Bg7, Black has completed the fianchetto</li>
+                        <li>White usually plays 4.e4, creating a strong pawn center</li>
+                        <li>Black continues with modest development, preparing for a later counterattack</li>
+                    </ol>
+                </div>
+                
+                <div class="tab-content" id="history-kings">
+                    <h3>History of the King's Indian Defense</h3>
+                    <p>While elements of this defense appeared in games from the 19th century, the King's Indian as a coherent system was developed in the 1920s and 1930s.</p>
+                    
+                    <p>The opening was popularized by players like Bronstein and Boleslavsky in the 1940s. It became highly respected after Bobby Fischer adopted it with great success in the 1960s.</p>
+                    
+                    <p>The King's Indian represents the hypermodern school of chess thought, which challenged classical dogma about controlling the center with pawns from the beginning of the game.</p>
+                    
+                    <h3>Notable Champions</h3>
+                    <p>The opening has been championed by aggressive players including Garry Kasparov, Bobby Fischer, and Mikhail Tal, who appreciated its dynamic counterattacking possibilities.</p>
+                </div>
+                
+                <div class="tab-content" id="video-kings">
+                    <h3>King's Indian Defense Tutorial</h3>
+                    <div class="video-container">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/F0yqb9VMhJU?si=5vV61u2RQFm9Ehkh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Card click event to open popups
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function() {
+                const opening = this.getAttribute('data-opening');
+                const popup = document.getElementById(`${opening}-popup`);
+                popup.style.display = 'flex';
+                document.body.style.overflow = 'hidden'; // Prevent scrolling while popup is open
+            });
+        });
+        
+        // Close popup when clicking close button
+        document.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('.popup-overlay').style.display = 'none';
+                document.body.style.overflow = 'auto'; // Re-enable scrolling
+            });
+        });
+        
+        // Close popup when clicking outside
+        document.querySelectorAll('.popup-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                    document.body.style.overflow = 'auto'; // Re-enable scrolling
+                }
+            });
+        });
+        
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Get the container of tabs
+                const tabsContainer = this.closest('.popup-tabs');
+                
+                // Remove active class from all tabs in this container
+                tabsContainer.querySelectorAll('.tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Get the tab content to show
+                const tabToShow = this.getAttribute('data-tab');
+                
+                // Hide all tab contents in this popup
+                const popup = this.closest('.popup');
+                popup.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Show the selected tab content
+                document.getElementById(tabToShow).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

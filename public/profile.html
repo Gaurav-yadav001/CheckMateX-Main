@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile | CheckMateX</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f7f7f7;
+        }
+        
+        header, footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        
+        header h1 {
+            display: inline-block;
+            margin-right: 2rem;
+        }
+        
+        nav {
+            display: inline-block;
+        }
+        
+        nav a {
+            color: white;
+            font-size: 18px;
+            margin-right: 20px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #e67e22;
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #e67e22;
+            margin-right: 2rem;
+            background-color: #f0f0f0;
+        }
+        
+        .profile-info h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .rating {
+            display: flex;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        
+        .rating-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 1.5rem;
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            background: #f8f9fa;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .rating-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .rating-label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .join-date {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            font-size: 0.9rem;
+            color: #95a5a6;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-picture {
+                margin-right: 0;
+                margin-bottom: 1.5rem;
+            }
+            
+            .join-date {
+                position: static;
+                margin-top: 1rem;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            position: relative;
+        }
+        
+        .card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.2rem;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .progress-container {
+            margin-bottom: 1.5rem;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-label span {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            width: 100%;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            width: 75%;
+            border-radius: 5px;
+        }
+        
+        .openings-container {
+            margin-top: 1rem;
+        }
+        
+        .opening-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .opening-item:last-child {
+            border-bottom: none;
+        }
+        
+        .opening-name {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .piece-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+        }
+        
+        .opening-mastery {
+            display: flex;
+            align-items: center;
+        }
+        
+        .mastery-bar {
+            width: 120px;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-right: 10px;
+        }
+        
+        .mastery-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .mastery-value {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .high {
+            background: #2ecc71;
+        }
+        
+        .medium {
+            background: #3498db;
+        }
+        
+        .low {
+            background: #e67e22;
+        }
+        
+        .badge-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90px;
+        }
+        
+        .badge-icon {
+            width: 50px;
+            height: 50px;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .badge-name {
+            font-size: 0.8rem;
+            text-align: center;
+            color: #7f8c8d;
+        }
+        
+        .bronze {
+            background: linear-gradient(135deg, #CD7F32, #e3a76f);
+        }
+        
+        .silver {
+            background: linear-gradient(135deg, #C0C0C0, #e3e3e3);
+        }
+        
+        .gold {
+            background: linear-gradient(135deg, #FFD700, #fce38a);
+        }
+        
+        .platinum {
+            background: linear-gradient(135deg, #8BDBF5, #b4e9fc);
+        }
+        
+        .recent-activity {
+            margin-top: 1rem;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: #f0f0f0;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .win {
+            background-color: #2ecc71;
+            color: white;
+        }
+        
+        .loss {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .draw {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .lesson {
+            background-color: #9b59b6;
+            color: white;
+        }
+        
+        .activity-details {
+            flex: 1;
+        }
+        
+        .activity-details h4 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+        
+        .activity-details p {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: #95a5a6;
+        }
+        
+        .tab-container {
+            margin-bottom: 2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 2rem;
+        }
+        
+        .tab {
+            padding: 0.8rem 1.5rem;
+            margin-right: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid #e67e22;
+            color: #e67e22;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin: 1.5rem 0;
+        }
+        
+        .current-learning {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .learning-icon {
+            width: 50px;
+            height: 50px;
+            background: #3498db;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 1rem;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .learning-details {
+            flex: 1;
+        }
+        
+        .learning-details h4 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
+        
+        .learning-details p {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .learning-progress {
+            margin-top: 0.5rem;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .learning-progress-fill {
+            height: 100%;
+            width: 65%;
+            background: #3498db;
+            border-radius: 3px;
+        }
+        
+        .game-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .game-result {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 1rem;
+            font-weight: bold;
+        }
+        
+        .game-details {
+            flex: 1;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+        }
+        
+        .game-type {
+            font-weight: 500;
+        }
+        
+        .game-date {
+            font-size: 0.85rem;
+            color: #95a5a6;
+        }
+        
+        .game-opening {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .game-stats {
+            display: flex;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+        }
+        
+        .game-rating-change {
+            margin-left: auto;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .positive {
+            color: #2ecc71;
+        }
+        
+        .negative {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CheckMateX</h1>
+        <nav>
+            <style>
+                /* ✅ This is the correct place for CSS */
+                nav a {
+                    color: white;
+                    font-size: 18px;
+                    margin-right: 20px;
+                    text-decoration: none;
+                    font-weight: 500;
+                    transition: color 0.3s;
+                }
+        
+                nav a:hover {
+                    color: orange;
+                }
+            </style>
+          
+            <a href="mainindex.html">Home</a>
+            <a href="openings.html">Openings</a>
+            <a href="#">Tactics</a>
+            <a href="#features">About</a>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="profile-header">
+            <img src="/images/profile.jpeg" alt="User Profile Picture" class="profile-picture">
+            <div class="profile-info">
+                <h2>Magnus Carlsen </h2>
+                <div class="status">Premium Member</div>
+                <p>Exciting chess enthusiast from New York, USA</p>
+                <div class="rating">
+                    <div class="rating-box">
+                        <span class="rating-value">1842</span>
+                        <span class="rating-label">Rapid</span>
+                    </div>
+                    <div class="rating-box">
+                        <span class="rating-value">1756</span>
+                        <span class="rating-label">Blitz</span>
+                    </div>
+                    <div class="rating-box">
+                        <span class="rating-value">1923</span>
+                        <span class="rating-label">Puzzle</span>
+                    </div>
+                </div>
+            </div>
+            <div class="join-date">Member since March 2023</div>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" data-tab="overview">Overview</div>
+                <div class="tab" data-tab="games">Games</div>
+                <div class="tab" data-tab="openings">Openings</div>
+                <div class="tab" data-tab="progress">Progress</div>
+            </div>
+            
+            <div class="tab-content active" id="overview">
+                <div class="grid">
+                    <div class="card">
+                        <h3>Game Statistics</h3>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value">357</div>
+                                <div class="stat-label">Total Games</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">186</div>
+                                <div class="stat-label">Wins</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">142</div>
+                                <div class="stat-label">Losses</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">29</div>
+                                <div class="stat-label">Draws</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="ratingChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Current Learning Path</h3>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span>Intermediate Course Progress</span>
+                                <span>75%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="current-learning">
+                            <div class="learning-icon">♞</div>
+                            <div class="learning-details">
+                                <h4>Sicilian Defense: Dragon Variation</h4>
+                                <p>Mastering aggressive counterplay against 1.e4</p>
+                                <div class="learning-progress">
+                                    <div class="learning-progress-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3>Recent Activity</h3>
+                        <div class="recent-activity">
+                            <div class="activity-item">
+                                <div class="activity-icon win">W</div>
+                                <div class="activity-details">
+                                    <h4>Won a Rapid Game</h4>
+                                    <p>Defeated grandmaster_xyz (1876) with the Queen's Gambit</p>
+                                </div>
+                                <div class="activity-time">2 hours ago</div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon lesson">L</div>
+                                <div class="activity-details">
+                                    <h4>Completed a Lesson</h4>
+                                    <p>Sicilian Defense: Key Tactical Patterns</p>
+                                </div>
+                                <div class="activity-time">Yesterday</div>
+                            </div>
+                            
+                            <div class="activity-item">
+                                <div class="activity-icon loss">L</div>
+                                <div class="activity-details">
+                                    <h4>Lost a Blitz Game</h4>
+                                    <p>Lost to chess_maestro (1823) in a King's Indian Defense</p>
+                                </div>
+                                <div class="activity-time">2 days ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>Achievements & Badges</h3>
+                    <div class="badge-container">
+                        <div class="badge">
+                            <div class="badge-icon gold">♛</div>
+                            <div class="badge-name">Queen Master</div>
+                        </div>
+                        <div class="badge">
+                            <div class="badge-icon silver">♜</div>
+                            <div class="badge-name">Rook Expert</div>
+                        </div>
+                        <div class="badge">
+                            <div class="badge-icon platinum">♚</div>
+                            <div class="badge-name">Endgame Wizard</div>
+                        </div>
+                        <div class="badge">
+                            <div class="badge-icon bronze">♝</div>
+                            <div class="badge-name">Bishop Novice</div>
+                        </div>
+                        <div class="badge">
+                            <div class="badge-icon silver">♞</div>
+                            <div class="badge-name">Knight Tactician</div>
+                        </div>
+                        <div class="badge">
+                            <div class="badge-icon gold">♟</div>
+                            <div class="badge-name">Pawn Structure Pro</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="games">
+                <div class="card">
+                    <h3>Recent Games</h3>
+                    <div class="game-item">
+                        <div class="game-result win">W</div>
+                        <div class="game-details">
+                            <div class="game-info">
+                                <span class="game-type">Rapid vs. grandmaster_xyz (1876)</span>
+                                <span class="game-date">April 20, 2025</span>
+                            </div>
+                            <div class="game-opening">Queen's Gambit Accepted</div>
+                            <div class="game-stats">
+                                <span>38 moves • 15:27</span>
+                                <span class="game-rating-change positive">+12</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="game-item">
+                        <div class="game-result loss">L</div>
+                        <div class="game-details">
+                            <div class="game-info">
+                                <span class="game-type">Blitz vs. chess_maestro (1823)</span>
+                                <span class="game-date">April 19, 2025</span>
+                            </div>
+                            <div class="game-opening">King's Indian Defense</div>
+                            <div class="game-stats">
+                                <span>42 moves • 7:52</span>
+                                <span class="game-rating-change negative">-9</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="game-item">
+                        <div class="game-result draw">D</div>
+                        <div class="game-details">
+                            <div class="game-info">
+                                <span class="game-type">Rapid vs. clever_player (1791)</span>
+                                <span class="game-date">April 17, 2025</span>
+                            </div>
+                            <div class="game-opening">Ruy Lopez, Closed Variation</div>
+                            <div class="game-stats">
+                                <span>56 moves • 22:13</span>
+                                <span class="game-rating-change">+1</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="game-item">
+                        <div class="game-result win">W</div>
+                        <div class="game-details">
+                            <div class="game-info">
+                                <span class="game-type">Blitz vs. tactical_wizard (1712)</span>
+                                <span class="game-date">April 15, 2025</span>
+                            </div>
+                            <div class="game-opening">Sicilian Defense, Najdorf</div>
+                            <div class="game-stats">
+                                <span>32 moves • 6:48</span>
+                                <span class="game-rating-change positive">+15</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="game-item">
+                        <div class="game-result loss">L</div>
+                        <div class="game-details">
+                            <div class="game-info">
+                                <span class="game-type">Rapid vs. endgame_expert (1904)</span>
+                                <span class="game-date">April 12, 2025</span>
+                            </div>
+                            <div class="game-opening">French Defense</div>
+                            <div class="game-stats">
+                                <span>45 moves • 18:32</span>
+                                <span class="game-rating-change negative">-11</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="openings">
+                <div class="grid">
+                    <div class="card">
+                        <h3>White Openings</h3>
+                        <div class="openings-container">
+                            <div class="opening-item">
+                                <div class="opening-name">
+                                    <img src="/api/placeholder/20/20" alt="White" class="piece-icon">
+                                    Queen's Gambit
+                                </div>
+                                <div class="opening-mastery">
+                                    <div class="mastery-bar">
+                                        <div class="mastery-fill high" style="width: 85%"></div>
+                                    </div>
+                                    <div class="mastery-value">85%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="opening-item">
+                                <div class="opening-name">
+                                    <img src="/api/placeholder/20/20" alt="White" class="piece-icon">
+                                    Ruy Lopez
+                                </div>
+                                <div class="opening-mastery">
+                                    <div class="mastery-bar">
+                                        <div class="mastery-fill high" style="width: 78%"></div>
+                                    </div>
+                                    <div class="mastery-value">78%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="opening-item">
+                                <div class="opening-name">
+                                    <img src="/api/placeholder/20/20" alt="White" class="piece-icon">
+                                    Italian Game
+                                </div>
+                                <div class="opening-mastery">
+                                    <div class="mastery-bar">
+                                        <div class="mastery-fill medium" style="width: 62%"></div>
+                                    </div>
+                                    <div class="mastery-value">62%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="opening-item">
+                                <div class="opening-name">
+                                    <img src="/api/placeholder/20/20" alt="White" class="piece-icon">
+                                    London System
+                                </div>
+                                <div class="opening-mastery">
+                                    <div class="mastery-bar">
+                                        <div class="mastery-fill medium" style="width: 54%"></div>
+                                    </div>
+                                    <div class="mastery-value">54%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="opening-item">
+                                <div class="opening-name">
+                                    <img src="/api/placeholder/20/20" alt="White" class="piece-icon">
+                                    Vienna Game
+                                </div>
+                                <div class="opening-mastery">
+                                    <div class="mastery-bar">
+                                        <div class="mastery-fill low" style="width: 31%"></div>
+                                    </div>
+                                    <div class="mastery-value">31%</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <canvas id="whiteOpeningsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Black Openings</h3>
+                        <div class="openings-container">
+                            <div class="opening-item">
+                                <div class="opening-name">
+                                    <img src="/api/placeholder/20/20" alt="Black" class="piece-icon">
+                                    Sicilian Defense
+                                </div>
+                                <div class="opening-mastery">
+                                    <div class="mastery-bar">
+                                        <div class="mastery-fill high" style="width: 89%"></div>
+                                    </div>
+                                    <div class="mastery-value">89%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="opening-item">
+                                <div class="opening-name">
+                                    <img src="/api/placeholder/20/20" alt="Black" class="piece-icon">
+                                    King's Indian Defense
+                                </div>
+                                <div class="opening-mastery">
+                                    <div class="mastery-bar">
+                                        <div class="mastery-fill high" style="width: 72%"></div>
+                                    </div>
+                                    <div class="mastery-value">72%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="opening-item">
+                                <div class="opening-name">
+                                    <img src="/api/placeholder/20/20" alt="Black" class="piece-icon">
+                                    Nimzo-Indian Defense
+                                </div>
+                                <div class="opening-mastery">
+                                    <div class="mastery-bar">
+                                        <div class="mastery-fill medium" style="width: 65%"></div>
+                                    </div>
+                                    <div class="mastery-value">65%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="opening-item">

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheckMateX - Chess Middlegames</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        
+        header, footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .highlight {
+            color: #e67e22;
+        }
+        
+        .content h2 {
+            margin: 2rem 0 1rem;
+            border-bottom: 2px solid #e67e22;
+            padding-bottom: 0.5rem;
+        }
+        
+        /* Card Layout */
+        .middlegame-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .card-img {
+            height: 150px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .piece-activity {
+            background-image: url("/api/placeholder/400/320");
+        }
+        
+        .pawn-structure {
+            background-image: url("/api/placeholder/400/320");
+        }
+        
+        .king-safety {
+            background-image: url("/api/placeholder/400/320");
+        }
+        
+        .tactical-motifs {
+            background-image: url("/api/placeholder/400/320");
+        }
+        
+        .card-content {
+            padding: 1.5rem;
+        }
+        
+        .card h3 {
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        /* Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .popup {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            border-radius: 12px;
+            overflow-y: auto;
+            position: relative;
+            animation: popIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .popup-content {
+            padding: 2rem;
+        }
+        
+        .popup h2 {
+            color: #e67e22;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .popup-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid #e67e22;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .steps {
+            counter-reset: step-counter;
+            list-style-type: none;
+            padding-left: 0;
+            margin: 1.5rem 0;
+        }
+        
+        .steps li {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .steps li:before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #e67e22;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .piece-moves {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .piece-move {
+            display: flex;
+            align-items: center;
+            background: #f5f7fa;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .piece-name {
+            font-weight: bold;
+            margin-right: 0.5rem;
+            color: #e67e22;
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            margin: 1.5rem 0;
+        }
+        
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .principles {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+        }
+        
+        .principles h2 {
+            margin-top: 0;
+        }
+        
+        .principles ol {
+            padding-left: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .principles li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .tactics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .tactic-card {
+            background: #f5f7fa;
+            padding: 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .tactic-card h4 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tactic-img {
+            height: 100px;
+            background-color: #ddd;
+            margin: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CheckMateX</h1>
+        <nav>
+            <style>
+                /* ✅ This is the correct place for CSS */
+                nav a {
+                    color: white;
+                    font-size: 18px;
+                    margin-right: 20px;
+                    text-decoration: none;
+                    font-weight: 500;
+                    transition: color 0.3s;
+                }
+        
+                nav a:hover {
+                    color: orange;
+                }
+            </style>
+            <a href="mainindex.html">Home</a>
+            <a href="openings.html">Openings</a>
+            <a href="learning-options.html">Middlegame</a>
+            <a href="endgames.html">Endgame</a>
+            <a href="#">Tactics</a>
+            <a href="#">About</a>
+        </nav>
+    </header>
+    
+    <main>
+        <section class="hero">
+            <h1>Dominate the <span class="highlight">Middlegame</span></h1>
+            <p>Develop strategic thinking and tactical skills to outmaneuver your opponents</p>
+        </section>
+        
+        <section class="content">
+            <h2>Middlegame Strategies</h2>
+            <div class="middlegame-cards">
+                <div class="card" data-strategy="piece-activity">
+                    <div class="card-img piece-activity"></div>
+                    <div class="card-content">
+                        <h3>Piece Activity</h3>
+                        <p>Maximize the potential of your pieces by placing them on strong squares.</p>
+                    </div>
+                </div>
+                
+                <div class="card" data-strategy="pawn-structure">
+                    <div class="card-img pawn-structure"></div>
+                    <div class="card-content">
+                        <h3>Pawn Structure</h3>
+                        <p>Understand and exploit pawn structures to create weaknesses in your opponent's position.</p>
+                    </div>
+                </div>
+                
+                <div class="card" data-strategy="king-safety">
+                    <div class="card-img king-safety"></div>
+                    <div class="card-content">
+                        <h3>King Safety</h3>
+                        <p>Ensure your king is well-protected while looking for opportunities to attack your opponent's king.</p>
+                    </div>
+                </div>
+                
+                <div class="card" data-strategy="tactical-motifs">
+                    <div class="card-img tactical-motifs"></div>
+                    <div class="card-content">
+                        <h3>Tactical Motifs</h3>
+                        <p>Master common tactical patterns including forks, pins, skewers, and discovered attacks.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <section class="principles">
+                <h2>Middlegame Principles</h2>
+                <ol>
+                    <li>Control key central squares</li>
+                    <li>Coordinate your pieces for maximum efficiency</li>
+                    <li>Identify and exploit weaknesses in your opponent's position</li>
+                    <li>Balance attack and defense</li>
+                    <li>Create and capitalize on imbalances (material, structure, space)</li>
+                </ol>
+            </section>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 CheckMateX - All Rights Reserved</p>
+    </footer>
+    
+    <!-- Popup Overlays -->
+    <div class="popup-overlay" id="piece-activity-popup">
+        <div class="popup">
+            <button class="close-btn">&times;</button>
+            <div class="popup-content">
+                <h2>Piece Activity</h2>
+                
+                <div class="popup-tabs">
+                    <div class="tab active" data-tab="howto-piece">How to Play</div>
+                    <div class="tab" data-tab="examples-piece">Examples</div>
+                    <div class="tab" data-tab="video-piece">Video</div>
+                </div>
+                
+                <div class="tab-content active" id="howto-piece">
+                    <h3>Maximizing Piece Activity</h3>
+                    <p>Active pieces control more squares and create more threats than passive ones. The key to middlegame success is giving your pieces maximum mobility and influence.</p>
+                    
+                    <h3>Key Principles</h3>
+                    <ol class="steps">
+                        <li>Position knights on stable outposts near the center</li>
+                        <li>Place bishops on long diagonals with clear lines of sight</li>
+                        <li>Control open files with your rooks</li>
+                        <li>Coordinate pieces to support each other's functions</li>
+                        <li>Restrict your opponent's piece activity through strategic pawn moves</li>
+                    </ol>
+                    
+                    <h3>Piece Mobility Guide</h3>
+                    <div class="piece-moves">
+                        <div class="piece-move"><span class="piece-name">Knights:</span> Ideal on protected squares in enemy territory</div>
+                        <div class="piece-move"><span class="piece-name">Bishops:</span> Control long diagonals, avoid blocked positions</div>
+                        <div class="piece-move"><span class="piece-name">Rooks:</span> Place on open files or 7th rank</div>
+                        <div class="piece-move"><span class="piece-name">Queen:</span> Coordinate with minor pieces, avoid premature exposure</div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="examples-piece">
+                    <h3>Famous Examples</h3>
+                    <p>The following position from Kasparov vs. Topalov (1999) shows extraordinary piece activity:</p>
+                    
+                    <p>In this position, Kasparov sacrificed material to achieve incredible piece activity. His rook, bishop, and queen all controlled critical squares, leading to a devastating attack despite being down significant material.</p>
+                    
+                    <h3>Activity vs. Material</h3>
+                    <p>Often in the middlegame, players sacrifice material (pawns or even pieces) to activate their remaining forces. Such imbalances create dynamic play and practical chances.</p>
+                    
+                    <h3>Exercise: Identify Inactive Pieces</h3>
+                    <ol>
+                        <li>Scan your position for pieces that control few squares</li>
+                        <li>Look for pieces blocked by their own pawns</li>
+                        <li>Find ways to improve their mobility through pawn breaks or piece maneuvers</li>
+                        <li>Consider whether a small sacrifice could dramatically improve your piece activity</li>
+                    </ol>
+                </div>
+                
+                <div class="tab-content" id="video-piece">
+                    <h3>Video Tutorial: Maximizing Piece Activity</h3>
+                    <div class="video-container">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/MoOw9BUjigA?si=ENvR3qCATjGS2xMY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    <p>This tutorial shows how to evaluate and improve the activity of each piece in your position, with practical examples from master games.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="popup-overlay" id="pawn-structure-popup">
+        <div class="popup">
+            <button class="close-btn">&times;</button>
+            <div class="popup-content">
+                <h2>Pawn Structure</h2>
+                
+                <div class="popup-tabs">
+                    <div class="tab active" data-tab="howto-pawn">How to Play</div>
+                    <div class="tab" data-tab="examples-pawn">Examples</div>
+                    <div class="tab" data-tab="video-pawn">Video</div>
+                </div>
+                
+                <div class="tab-content active" id="howto-pawn">
+                    <h3>Understanding Pawn Structures</h3>
+                    <p>Pawns are the skeletal structure of the position. Their arrangement determines the character of the middlegame and influences your strategic plans.</p>
+                    
+                    <h3>Key Structures</h3>
+                    <ol class="steps">
+                        <li>Identify pawn weaknesses (isolated, doubled, backward)</li>
+                        <li>Create and support passed pawns</li>
+                        <li>Form pawn chains and understand how to attack them</li>
+                        <li>Control key central squares with your pawns</li>
+                        <li>Create pawn breaks to open lines for your pieces</li>
+                    </ol>
+                    
+                    <h3>Pawn Formations Guide</h3>
+                    <div class="piece-moves">
+                        <div class="piece-move"><span class="piece-name">Isolated Pawn:</span> Usually a weakness that can be blockaded</div>
+                        <div class="piece-move"><span class="piece-name">Passed Pawn:</span> Potential asset that can advance to promotion</div>
+                        <div class="piece-move"><span class="piece-name">Pawn Chain:</span> Attack at the base, defend at the head</div>
+                        <div class="piece-move"><span class="piece-name">Pawn Islands:</span> Fewer islands often means better structure</div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="examples-pawn">
+                    <h3>Common Structures</h3>
+                    <p>These pawn structures frequently determine middlegame plans:</p>
+                    
+                    <h4>Carlsbad Structure</h4>
+                    <p>Formed in the Queen's Gambit Exchange Variation, characterized by a White pawn majority on the queenside and Black majority on the kingside.</p>
+                    
+                    <h4>Isolated Queen's Pawn</h4>
+                    <p>Common in many openings including the Queen's Gambit Accepted. The isolated d-pawn gives space and piece activity but can become a target.</p>
+                    
+                    <h4>Hanging Pawns</h4>
+                    <p>Adjacent pawns (usually c4 and d4) without pawns on neighboring files. They provide space and flexibility but can be vulnerable to attack.</p>
+                    
+                    <h3>Transformation of Structures</h3>
+                    <p>Good players know when to transform one pawn structure into another through timely exchanges, often improving their position in the process.</p>
+                </div>
+                
+                <div class="tab-content" id="video-pawn">
+                    <h3>Video Tutorial: Mastering Pawn Structures</h3>
+                    <div class="video-container">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/yAnNQY2Ac6w?si=N4vESQ6EB85rAZjj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    <p>This tutorial covers identifying strengths and weaknesses in various pawn structures, with strategic plans for each configuration.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="popup-overlay" id="king-safety-popup">
+        <div class="popup">
+            <button class="close-btn">&times;</button>
+            <div class="popup-content">
+                <h2>King Safety</h2>
+                
+                <div class="popup-tabs">
+                    <div class="tab active" data-tab="howto-king">How to Play</div>
+                    <div class="tab" data-tab="examples-king">Examples</div>
+                    <div class="tab" data-tab="video-king">Video</div>
+                </div>
+                
+                <div class="tab-content active" id="howto-king">
+                    <h3>Ensuring King Safety</h3>
+                    <p>In the middlegame, king safety is paramount. A well-protected king allows you to focus on attacking your opponent, while a vulnerable king can lead to sudden defeat.</p>
+                    
+                    <h3>Key Principles</h3>
+                    <ol class="steps">
+                        <li>Maintain a solid pawn shield in front of your castled king</li>
+                        <li>Avoid unnecessary pawn moves that weaken your king's position</li>
+                        <li>Keep defensive pieces near your king when facing an attack</li>
+                        <li>Watch for open lines (files, diagonals) that point toward your king</li>
+                        <li>Recognize the danger signs of an impending attack</li>
+                    </ol>
+                    
+                    <h3>Defensive Techniques</h3>
+                    <div class="piece-moves">
+                        <div class="piece-move"><span class="piece-name">Pawn Shield:</span> Maintain pawns on f2, g2, h2 (or f7, g7, h7)</div>
+                        <div class="piece-move"><span class="piece-name">Defenders:</span> Knights make excellent defenders near the king</div>
+                        <div class="piece-move"><span class="piece-name">Counterattack:</span> Often the best defense is creating threats elsewhere</div>
+                        <div class="piece-move"><span class="piece-name">Prophylaxis:</span> Anticipate and prevent attacking plans</div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="examples-king">
+                    <h3>Attack Patterns</h3>
+                    <p>Recognizing common attacking patterns helps you both attack and defend:</p>
+                    
+                    <h4>Greek Gift Sacrifice</h4>
+                    <p>The bishop sacrifice on h7/h2 followed by queen and knight joining the attack. This pattern requires specific defensive pieces to be missing.</p>
+                    
+                    <h4>Pawn Storm</h4>
+                    <p>Advancing pawns to break open the castled position. Defenders must decide whether to exchange pawns or keep the position closed.</p>
+                    
+                    <h4>Opposite-Side Castling</h4>
+                    <p>When kings are on opposite sides, both players race to attack. Understanding when to push pawns and when to bring pieces is crucial.</p>
+                    
+                    <h3>Defense in Action</h3>
+                    <p>Studying the defensive techniques of players like Petrosian and Karpov can greatly improve your ability to protect your king under pressure.</p>
+                </div>
+                
+                <div class="tab-content" id="video-king">
+                    <h3>Video Tutorial: King Safety Essentials</h3>
+                    <div class="video-container">
+                        <div class="video-placeholder">
+                            <p>Video Tutorial Would Appear Here</p>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/1vnbc2tF9UE?si=YKOjclOh-H1axBHu" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe> </div>
+                    </div>
+                    <p>This tutorial demonstrates both attacking and defensive techniques related to king safety, with examples from grandmaster games.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="popup-overlay" id="tactical-motifs-popup">
+        <div class="popup">
+            <button class="close-btn">&times;</button>
+            <div class="popup-content">
+                <h2>Tactical Motifs</h2>
+                
+                <div class="popup-tabs">
+                    <div class="tab active" data-tab="howto-tactical">How to Play</div>
+                    <div class="tab" data-tab="examples-tactical">Examples</div>
+                    <div class="tab" data-tab="video-tactical">Video</div>
+                </div>
+                
+                <div class="tab-content active" id="howto-tactical">
+                    <h3>Mastering Tactical Patterns</h3>
+                    <p>Tactical motifs are recurring patterns that appear in many games. Recognizing these patterns allows you to find winning combinations quickly.</p>
+                    
+                    <h3>Essential Tactics</h3>
+                    <div class="tactics-grid">
+                        <div class="tactic-card">
+                            <h4>Forks</h4>
+                            <div class="tactic-img">Fork Diagram</div>
+                            <p>Attacking two or more pieces simultaneously</p>
+                        </div>
+                        <div class="tactic-card">
+                            <h4>Pins</h4>
+                            <div class="tactic-img">Pin Diagram</div>
+                            <p>Immobilizing a piece because moving would expose a more valuable piece</p>
+                        </div>
+                        <div class="tactic-card">
+                            <h4>Skewers</h4>
+                            <div class="tactic-img">Skewer Diagram</div>
+                            <p>Attacking two pieces in a line, forcing the more valuable piece to move</p>
+                        </div>
+                        <div class="tactic-card">
+                            <h4>Discovered Attacks</h4>
+                            <div class="tactic-img">Discovered Attack Diagram</div>
+                            <p>Moving one piece to reveal an attack from another</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Calculation Process</h3>
+                    <ol class="steps">
+                        <li>Identify tactical motifs in the position</li>
+                        <li>Calculate forced variations thoroughly</li>
+                        <li>Check for defensive resources your opponent might have</li>
+                        <li>Verify your analysis before executing the combination</li>
+                        <li>Look for even stronger continuations</li>
+                    </ol>
+                </div>
+                
+                <div class="tab-content" id="examples-tactical">
+                    <h3>Advanced Tactical Motifs</h3>
+                    
+                    <h4>Zwischenzug (Intermediate Move)</h4>
+                    <p>Making an unexpected move in the middle of what seemed like a forced sequence, often improving the outcome significantly.</p>
+                    
+                    <h4>Deflection</h4>
+                    <p>Forcing a piece to abandon a defensive duty, often through a sacrifice.</p>
+                    
+                    <h4>Overloaded Piece</h4>
+                    <p>Exploiting a situation where one piece is performing multiple defensive duties and cannot maintain all of them.</p>
+                    
+                    <h4>Windmill</h4>
+                    <p>A series of discovered checks that allows a piece to capture multiple targets while the king is forced to move back and forth.</p>
+                    
+                    <h3>Combination Training</h3>
+                    <p>Regular tactical training is essential for middlegame mastery. Start with simple patterns and gradually work on more complex combinations.</p>
+                </div>
+                
+                <div class="tab-content" id="video-tactical">
+                    <h3>Video Tutorial: Tactical Patterns</h3>
+                    <div class="video-container">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/Wx-KJiqRuoo?si=V-vy-80cYZ4eS5Od" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    <p>This tutorial covers the most important tactical patterns with interactive examples to train your pattern recognition.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Card click event to open popups
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function() {
+                const strategy = this.getAttribute('data-strategy');
+                const popup = document.getElementById(`${strategy}-popup`);
+                popup.style.display = 'flex';
+                document.body.style.overflow = 'hidden'; // Prevent scrolling while popup is open
+            });
+        });
+        
+        // Close popup when clicking close button
+        document.querySelectorAll('.close-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('.popup-overlay').style.display = 'none';
+                document.body.style.overflow = 'auto'; // Re-enable scrolling
+            });
+        });
+        
+        // Close popup when clicking outside
+        document.querySelectorAll('.popup-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                    document.body.style.overflow = 'auto'; // Re-enable scrolling
+                }
+            });
+        });
+        
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Get the container of tabs
+                const tabsContainer = this.closest('.popup-tabs');
+                
+                // Remove active class from all tabs in this container
+                tabsContainer.querySelectorAll('.tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Get the tab content to show
+                const tabToShow = this.getAttribute('data-tab');
+                
+                // Hide all tab contents in this popup
+                const popup = this.closest('.popup');
+                popup.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Show the selected tab content
+                document.getElementById(tabToShow).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
